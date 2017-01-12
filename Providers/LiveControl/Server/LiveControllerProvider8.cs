@@ -130,11 +130,12 @@ namespace Providers.LiveControl.Server
 
         private void DuplicationManager_onNewFrameReady(Bitmap newBitmap)
         {
-            // SendFragmentedBitmap(newBitmap,)
             var screenshot =newBitmap;
             var stream = new MemoryStream();
-            screenshot.Save(stream, ImageFormat.Bmp);
+            screenshot.Save(stream, ImageFormat.Png);
             SendFragmentedBitmap(stream.ToArray(), Screen.PrimaryScreen.Bounds);
+
+
         }
 
 

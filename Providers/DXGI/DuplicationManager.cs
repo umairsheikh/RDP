@@ -210,18 +210,21 @@ namespace DXGI_DesktopDuplication
                                         dirtyRectangle, dirtyRectangle.Size.Height*dirtyRectangle.Size.Width,
                                         counter, subCounter);
 
-                                    ExtractRect(dirtyRectangle.X, dirtyRectangle.Y, dirtyRectangle.Width,
-                                        dirtyRectangle.Height).Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
+                                    var exactrectangle = ExtractRect(dirtyRectangle.X, dirtyRectangle.Y, dirtyRectangle.Width,
+                                           dirtyRectangle.Height);
+                                        exactrectangle.Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
+                                    //FireNewFrameEvent(exactrectangle);
+
                                 }
                             counter++;
 
                             //Update Dispatcher to send event to invoke UI update from here or send that packet 
                            var bitmapTosend = Texture2DToBitmap();
-                           FireNewFrameEvent(bitmapTosend);
-                           /* if (dispatcher != null)
-                                dispatcher.BeginInvoke(MainWindow.RefreshUI,
-                                    Texture2DToBitmap());*/
-                                
+                          FireNewFrameEvent(bitmapTosend);
+
+                            //if (dispatcher != null)
+                            //    dispatcher.BeginInvoke(MainWindow.RefreshUI,
+                            //        Texture2DToBitmap());
 
 
                             captured = true;
@@ -318,7 +321,7 @@ namespace DXGI_DesktopDuplication
             return bitmap;
         }
 
-        //TODO copy bitmap的指定区域
+        //TODO copy bitmap of the designated area
         public Bitmap ExtractRect(int originX, int originY, int width, int height)
         {
             // Get the desktop capture screenTexture

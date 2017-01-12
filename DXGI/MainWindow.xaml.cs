@@ -33,6 +33,7 @@ namespace DXGI_DesktopDuplication
         {
             InitializeComponent();
 
+         
 
             //LiveControlManagerServer
 
@@ -194,10 +195,13 @@ namespace DXGI_DesktopDuplication
 
         private void LiveControlManager_OnScreenshotReceived(object sender, ScreenshotMessageEventArgs e)
         {
-            var screenshot = e.Screenshot;
+            // var screenshot = e.Screenshot;
 
+            var screenshot = e.Screenshot;
             using (var stream = new System.IO.MemoryStream(screenshot.Image))
             {
+
+                //this.Dispatcher.BeginInvoke(MainWindow.RefreshUI,LiveControlManagerServer.);
 
                 //Show image with current render code
 
