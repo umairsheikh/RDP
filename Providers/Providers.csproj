@@ -32,9 +32,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DesktopDuplication">
-      <HintPath>..\DesktopDuplication\bin\Debug\DesktopDuplication.dll</HintPath>
-    </Reference>
     <Reference Include="Lidgren.Network">
       <HintPath>..\Packages\Lidgren.Network.dll</HintPath>
     </Reference>
@@ -73,6 +70,10 @@
     <Compile Include="Provider.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DesktopDuplication\DesktopDuplication.csproj">
+      <Project>{222c215b-663f-4bd6-9b3e-8fa99c867b22}</Project>
+      <Name>DesktopDuplication</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MirrorDriver\MirrorDriver.csproj">
       <Project>{18d98e23-bbfe-432b-861c-1a1dc4bd302b}</Project>
       <Name>MirrorDriver</Name>
