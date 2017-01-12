@@ -8,6 +8,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Managers.Nova.Server;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace DXGI_DesktopDuplication
 {
@@ -16,13 +17,13 @@ namespace DXGI_DesktopDuplication
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly DuplicationManager duplicationManager = null;
+        private  DuplicationManager duplicationManager = null;
 
         public static UpdateUI RefreshUI;
 
         private Thread duplicateThread = null;
 
-        public Managers.Nova.Server.NovaManager NovaManager { get { return Managers.NovaServer.Instance.NovaManager; } }
+        public NovaManager NovaManager { get { return Managers.NovaServer.Instance.NovaManager; } }
         public Managers.LiveControl.Server.LiveControlManager LiveControlManager { get { return Managers.NovaServer.Instance.LiveControlManager; } }
 
 
@@ -31,23 +32,16 @@ namespace DXGI_DesktopDuplication
             InitializeComponent();
 
             
-                
-            NovaManager.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
-            NovaManager.OnNewPasswordGenerated += new EventHandler<Providers.Nova.Modules.PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
-            NovaManager.Network.OnConnected += new EventHandler<Network.ConnectedEventArgs>(Network_OnConnected);
-
             RefreshUI = UpdateImage;
-            duplicateThread = new Thread(Demo);
+            //duplicateThread = new Thread(Demo);
 
             //test code here
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
-
             Console.WriteLine(Marshal.SizeOf(typeof (Vertex)));
 
             duplicationManager = DuplicationManager.GetInstance(Dispatcher);
 
-            CaptureFrame();
         }
 
 
@@ -70,8 +64,13 @@ namespace DXGI_DesktopDuplication
             Console.WriteLine("Exited");
         }
 
-        public async void CaptureFrame()
+
+        public async Task InitNetworkManager()
         {
+
+            NovaManager.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
+            NovaManager.OnNewPasswordGenerated += new EventHandler<PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
+            NovaManager.Network.OnConnected += new EventHandler<Network.ConnectedEventArgs>(Network_OnConnected);
 
             PasswordGeneratedEventArgs passArgs = await NovaManager.GeneratePassword();
             LabelPassword.Content = passArgs.NewPassword;
@@ -79,10 +78,19 @@ namespace DXGI_DesktopDuplication
             LabelNovaId.Content = regArgs.NovaId;
             Status.Content = "Host is live";
 
+        }
+
+
+        public async Task CaptureFrame()
+        {
 
             FrameData frameData;
             duplicationManager.GetFrame(out frameData);
             duplicationManager.GetChangedRects(ref frameData); //TODO pending
+
+
+
+
         }
 
 
@@ -136,18 +144,46 @@ namespace DXGI_DesktopDuplication
 
         void ServerManager_OnNewPasswordGenerated(object sender, Providers.Nova.Modules.PasswordGeneratedEventArgs e)
         {
-            LabelPassword.Content = e.NewPassword;
+            Dispatcher.Invoke(new Action(() =>
+            {
+                LabelPassword.Content = e.NewPassword;
+            }));
+
         }
 
         private void NovaManager_OnIntroducerRegistrationResponded(object sender, Providers.Nova.Modules.IntroducerRegistrationResponsedEventArgs e)
         {
-            LabelNovaId.Content = e.NovaId;
-         
+            Dispatcher.Invoke(new Action(() =>
+            {
+                LabelNovaId.Content = e.NovaId;
+            }));
+
         }
 
         private void StartHosting_Click(object sender, RoutedEventArgs e)
         {
                
+        }
+
+        private async void startCapture_Click(object sender, RoutedEventArgs e)
+        {
+            // await CaptureFrame();
+            await InitNetworkManager();
+               
+
+        }
+
+        private void ConnectRemote_Click(object sender, RoutedEventArgs e)
+        {
+            //if (duplicateThread.ThreadState == System.Threading.ThreadState.Unstarted)
+            //{
+            //    duplicateThread.Start();
+            //    Console.WriteLine("Start");
+            //}
+
+
+            //CapturedChangedRects();
+            //Console.WriteLine("Click");
         }
     }
 }

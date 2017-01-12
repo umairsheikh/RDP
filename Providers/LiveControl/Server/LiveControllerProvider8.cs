@@ -55,7 +55,7 @@ namespace Providers.LiveControl.Server
 
             DesktopChanges = new List<Rectangle>();
             Timer = new Stopwatch();
-            MirrorDriver2.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
+            //MirrorDriver2.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
         }
 
         private void MirrorDriver_DesktopChange(object sender, DesktopMirror.DesktopChangeEventArgs e)

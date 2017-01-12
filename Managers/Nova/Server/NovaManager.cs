@@ -29,7 +29,7 @@ namespace Managers.Nova.Server
             return await GeneratePasswordAsTask();
         }
 
-        public Task<PasswordGeneratedEventArgs> GeneratePasswordAsTask()
+        public  Task<PasswordGeneratedEventArgs> GeneratePasswordAsTask()
         {
             Trace.WriteLine("Ran");
             var tcs = RegisterAsTask<PasswordGeneratedEventArgs>(ref OnNewPasswordGenerated);
