@@ -41,8 +41,7 @@ namespace Server.Forms
 
         private void CheckMirrorDriverExists()
         {
-            if (!LiveControlManager.Provider.DoesMirrorDriverExist())
-            {
+           
                 /* This error is referring to:
                  
                 while (deviceFound = EnumDisplayDevices(null, deviceIndex, ref device, 0))
@@ -63,7 +62,7 @@ namespace Server.Forms
                 {
                     Process.Start("http://www.demoforge.com/tightvnc/dfmirage-setup-2.0.301.exe");
                 }
-            }
+            
         }
 
         private void Timer_KeepAlive_Tick(object sender, EventArgs e)

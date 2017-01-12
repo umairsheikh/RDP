@@ -9,6 +9,9 @@ using System.Windows.Media.Imaging;
 using Managers.Nova.Server;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Managers.LiveControl.Client;
+
+using Providers.LiveControl.Client;
 
 namespace DXGI_DesktopDuplication
 {
@@ -17,30 +20,32 @@ namespace DXGI_DesktopDuplication
     /// </summary>
     public partial class MainWindow : Window
     {
-        private  DuplicationManager duplicationManager = null;
-
+        //private DuplicationManager duplicationManager = null;
         public static UpdateUI RefreshUI;
-
         private Thread duplicateThread = null;
 
         public NovaManager NovaManager { get { return Managers.NovaServer.Instance.NovaManager; } }
-        public Managers.LiveControl.Server.LiveControlManager LiveControlManager { get { return Managers.NovaServer.Instance.LiveControlManager; } }
+        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer { get { return Managers.NovaServer.Instance.LiveControlManager; } }
+        public LiveControlManager LiveControlManagerClient { get { return Managers.NovaClient.Instance.LiveControlManager; } }
 
 
         public MainWindow()
         {
             InitializeComponent();
 
-            
+
+            //LiveControlManagerServer
+
             RefreshUI = UpdateImage;
             //duplicateThread = new Thread(Demo);
 
             //test code here
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
-            Console.WriteLine(Marshal.SizeOf(typeof (Vertex)));
+            Console.WriteLine(Marshal.SizeOf(typeof(Vertex)));
 
-            duplicationManager = DuplicationManager.GetInstance(Dispatcher);
+            // duplicationManager = DuplicationManager.GetInstance(Dispatcher);
+            //  LiveControlManagerServer.
 
         }
 
@@ -54,7 +59,7 @@ namespace DXGI_DesktopDuplication
 
         public void Demo()
         {
-            
+
             while (Thread.CurrentThread.IsAlive)
             {
                 CapturedChangedRects();
@@ -78,15 +83,17 @@ namespace DXGI_DesktopDuplication
             LabelNovaId.Content = regArgs.NovaId;
             Status.Content = "Host is live";
 
+           // LiveControlManagerServer.RunThreadToSendFrames(this.Dispatcher);
+
         }
 
 
         public async Task CaptureFrame()
         {
 
-            FrameData frameData;
-            duplicationManager.GetFrame(out frameData);
-            duplicationManager.GetChangedRects(ref frameData); //TODO pending
+            //FrameData frameData;
+            //duplicationManager.GetFrame(out frameData);
+            //duplicationManager.GetChangedRects(ref frameData); //TODO pending
 
 
 
@@ -96,8 +103,8 @@ namespace DXGI_DesktopDuplication
 
         public void CapturedChangedRects()
         {
-            FrameData data = null;
-            duplicationManager.GetChangedRects(ref data);
+            //FrameData data = null;
+            //duplicationManager.GetChangedRects(ref data);
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -160,21 +167,20 @@ namespace DXGI_DesktopDuplication
 
         }
 
-        private void StartHosting_Click(object sender, RoutedEventArgs e)
-        {
-               
-        }
-
         private async void startCapture_Click(object sender, RoutedEventArgs e)
         {
             // await CaptureFrame();
+            //Start Server Network Registration
             await InitNetworkManager();
-               
+
 
         }
 
         private void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
+            LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
+
+
             //if (duplicateThread.ThreadState == System.Threading.ThreadState.Unstarted)
             //{
             //    duplicateThread.Start();
@@ -184,6 +190,36 @@ namespace DXGI_DesktopDuplication
 
             //CapturedChangedRects();
             //Console.WriteLine("Click");
+        }
+
+        private void LiveControlManager_OnScreenshotReceived(object sender, ScreenshotMessageEventArgs e)
+        {
+            var screenshot = e.Screenshot;
+
+            using (var stream = new System.IO.MemoryStream(screenshot.Image))
+            {
+
+                //Show image with current render code
+
+                // Image image = Image.FromStream(stream);
+                //Application.DoEvents();
+                //this.BackgroundImage = image;
+                /*   if (ShowRegionOutlines)
+                   {
+                       var gfx = gdiScreen1.CreateGraphics();
+                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y));
+                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
+                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
+                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y));
+                       gfx.Dispose();
+                   }
+                   gdiScreen1.Draw(image, screenshot.Region);
+               }
+
+               LiveControlManager.RequestScreenshot();
+               */
+                //Trace.WriteLine(String.Format("Processed Image #{0}, Size: {1} KB", e.Screenshot.Number, GetKBFromBytes(e.Screenshot.Image.Length)));
+            }
         }
     }
 }

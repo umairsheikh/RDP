@@ -12,8 +12,11 @@ using Network.Messages.LiveControl;
 using Providers.Extensions;
 using Rectangle = System.Drawing.Rectangle;
 using DesktopDuplication;
-
 using MirrorDriver;
+using DXGI_DesktopDuplication;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Providers.LiveControl.Server
 {
@@ -21,11 +24,18 @@ namespace Providers.LiveControl.Server
     public class LiveControllerProvider8 :Provider
     {
 
+
+        /*
+         *Adding Dupliation Manager DXGI 
+         */
+        public DuplicationManager duplicationManager = null;
+        public static UpdateUI RefreshUI;
+        private Thread duplicateThread = null;
+
         private DesktopDuplicator MirrorDriver;
         public DesktopFrame frame = null;
 
-        public DesktopMirror MirrorDriver2 { get; set; }
-
+        public Dispatcher mydispatchtoParse { get; set; }
         
 
         /// <summary>
@@ -40,6 +50,13 @@ namespace Providers.LiveControl.Server
         public LiveControllerProvider8(NetworkPeer network)
             : base(network)
         {
+
+
+           
+
+/*
+
+
             DesktopChanges = new List<Rectangle>();
             Timer = new Stopwatch();
            // MirrorDriver.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
@@ -55,7 +72,33 @@ namespace Providers.LiveControl.Server
 
             DesktopChanges = new List<Rectangle>();
             Timer = new Stopwatch();
-            //MirrorDriver2.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
+          */  //MirrorDriver2.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
+        }
+
+
+        public void Demo()
+        {
+
+           // while (Thread.CurrentThread.IsAlive)
+            {
+                CapturedChangedRects();
+                Console.WriteLine("Capture");
+            }
+
+            Console.WriteLine("Exited");
+        }
+
+        public async Task CaptureFrame()
+        {
+            FrameData frameData;
+            duplicationManager.GetFrame(out frameData);
+            duplicationManager.GetChangedRects(ref frameData); //TODO pending
+        }
+
+        public void CapturedChangedRects()
+        {
+            FrameData data = null;
+            duplicationManager.GetChangedRects(ref data);
         }
 
         private void MirrorDriver_DesktopChange(object sender, DesktopMirror.DesktopChangeEventArgs e)
@@ -67,19 +110,38 @@ namespace Providers.LiveControl.Server
 
         public override void RegisterMessageHandlers()
         {
-            Network.RegisterMessageHandler<RequestScreenshotMessage>(OnRequestScreenshotMessageReceived);
+            Network.RegisterMessageHandler<RequestScreenshotMessage>(OnRequestScreenshotMessageReceived2);
+
+
         }
 
 
-        
-        public bool DoesMirrorDriverExist()
+        //on screen shared initiated new
+        private void OnRequestScreenshotMessageReceived2(MessageEventArgs<RequestScreenshotMessage> e)
         {
-            return true;//MirrorDriver.DriverExists();
+
+            mydispatchtoParse = Dispatcher.CurrentDispatcher;
+            duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
+            duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady;
+            Demo();
+
+
         }
 
-        //on screen shared initiated
+        private void DuplicationManager_onNewFrameReady(Bitmap newBitmap)
+        {
+            // SendFragmentedBitmap(newBitmap,)
+            var screenshot =newBitmap;
+            var stream = new MemoryStream();
+            screenshot.Save(stream, ImageFormat.Bmp);
+            SendFragmentedBitmap(stream.ToArray(), Screen.PrimaryScreen.Bounds);
+        }
+
+
+        //on screen shared initiated old
         private void OnRequestScreenshotMessageReceived(MessageEventArgs<RequestScreenshotMessage> e)
         {
+
 
             while (true)
             {
@@ -107,55 +169,6 @@ namespace Providers.LiveControl.Server
             }
                
          }
-
-        public void startSendingScreenCapture()
-        {
-
-            while (true)
-            {
-                Trace.WriteLine(String.Format("Received RequestScreenshotMessage."));
-
-                // Send them the list of queued up changes
-                //var regions = (List<Rectangle>)GetOptimizedRectangleRegions();
-
-               // Bitmap screenshot = MirrorDriver.GetLatestFrame().DesktopImage;
-                var frame = MirrorDriver.GetLatestFrame();
-                var screenshot = frame.DesktopImage;
-                var stream = new MemoryStream();
-                screenshot.Save(stream, ImageFormat.Png);
-
-                SendFragmentedBitmap(stream.ToArray(), Screen.PrimaryScreen.Bounds);
-
-                /*if (regions.Count == 0)
-                {
-                    Network.SendMessage(new ResponseEmptyScreenshotMessage(), NetDeliveryMethod.ReliableOrdered, 0);
-                    return;
-                }
-
-                for (int i = 0; i < regions.Count; i++)
-                {
-                    if (regions[i].IsEmpty) continue;
-
-                    Bitmap regionShot = null;
-
-                    try
-                    {
-                        regionShot = screenshot.Clone(regions[i], PixelFormat.Format16bppRgb565);
-                    }
-                    catch (OutOfMemoryException ex)
-                    {
-                        Trace.WriteLine("OutOfMemoryException");
-                    }
-
-                    var stream = new MemoryStream();
-                    regionShot.Save(stream, ImageFormat.Png);
-
-                    SendFragmentedBitmap(stream.ToArray(), regions[i]);
-                }*/
-            }
-
-
-        }
 
         private void SendFragmentedBitmap(byte[] bitmapBytes, Rectangle region)
         {
