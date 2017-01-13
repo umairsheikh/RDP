@@ -56,7 +56,6 @@ namespace Providers.LiveControl.Server
 
 /*
 
-
             DesktopChanges = new List<Rectangle>();
             Timer = new Stopwatch();
            // MirrorDriver.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
@@ -79,7 +78,8 @@ namespace Providers.LiveControl.Server
         public void Demo()
         {
 
-           // while (Thread.CurrentThread.IsAlive)
+            //while (Thread.CurrentThread.IsAlive)
+            while(true)
             {
                 CapturedChangedRects();
                 Console.WriteLine("Capture");
@@ -123,8 +123,8 @@ namespace Providers.LiveControl.Server
             mydispatchtoParse = Dispatcher.CurrentDispatcher;
             duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
             duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady;
+            //duplicateThread = new Thread(Demo);
             Demo();
-
 
         }
 

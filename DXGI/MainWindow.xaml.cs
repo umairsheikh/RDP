@@ -57,7 +57,7 @@ namespace DXGI_DesktopDuplication
                 CapturedChangedRects();
                 Console.WriteLine("Capture");
             }
-
+          
             Console.WriteLine("Exited");
         }
 
@@ -98,6 +98,8 @@ namespace DXGI_DesktopDuplication
         {
             //  ButtonConnect.Set(() => ButtonConnect.Text, "Connected.");
             remoteConnection.Content = "Connected to remote";
+            LiveControlManagerClient.RequestScreenshot();
+
             // this.Dispose();
         }
 
@@ -129,7 +131,6 @@ namespace DXGI_DesktopDuplication
         {
             // ButtonConnect.Set(() => ButtonConnect.Text, "Connecting to " + TextBox_Id.Text + " ...");
             remoteConnection.Content = "Connecting to machine..";
-            LiveControlManagerClient.RequestScreenshot();
 
         }
 
