@@ -217,13 +217,14 @@ namespace DXGI_DesktopDuplication
         {
             // await CaptureFrame();
             //Start Server Network Registration
-            await InitNetworkManager();
+            await InitNetworkManagerServer();
 
 
         }
 
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
+           await  InitNetworkManagerClient();
             await NovaManagerClient.RequestIntroductionAsTask(RID.Text, PWD.Text);
             LiveControlManagerClient.RequestScreenshot();
 
