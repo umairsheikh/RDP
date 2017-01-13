@@ -36,6 +36,7 @@ namespace DXGI_DesktopDuplication
 
         public MainWindow()
         {
+            LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
             InitializeComponent();
             RefreshUI = UpdateImage;
 
@@ -213,8 +214,8 @@ namespace DXGI_DesktopDuplication
 
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
-            LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
             await NovaManagerClient.RequestIntroductionAsTask(RID.Text, PWD.Text);
+            LiveControlManagerClient.RequestScreenshot();
 
             //if (duplicateThread.ThreadState == System.Threading.ThreadState.Unstarted)
             //{
