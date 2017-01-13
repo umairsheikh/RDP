@@ -14,6 +14,8 @@ using Managers.LiveControl.Client;
 using Providers.LiveControl.Client;
 using Network;
 using Network.Messages.Nova;
+using System.IO;
+using System.Drawing.Imaging;
 
 namespace DXGI_DesktopDuplication
 {
@@ -26,35 +28,28 @@ namespace DXGI_DesktopDuplication
         public static UpdateUI RefreshUI;
         private Thread duplicateThread = null;
 
-
         public Managers.Nova.Client.NovaManager NovaManagerClient { get { return Managers.NovaClient.Instance.NovaManager; } }
+        public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient { get { return Managers.NovaClient.Instance.LiveControlManager; } }
+
         public NovaManager NovaManagerServer { get { return Managers.NovaServer.Instance.NovaManager; } }
         public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer { get { return Managers.NovaServer.Instance.LiveControlManager; } }
-        public LiveControlManager LiveControlManagerClient { get { return Managers.NovaClient.Instance.LiveControlManager; } }
-
 
         public MainWindow()
         {
             InitializeComponent();
-
-
             RefreshUI = UpdateImage;
 
             //test code here
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
             Console.WriteLine(Marshal.SizeOf(typeof(Vertex)));
-
-
         }
-
 
         public static void UpdateBimtapWithFrameData(ref Bitmap sourceBitmap, FrameData data)
         {
             Graphics graphics = Graphics.FromImage(sourceBitmap);
             //TODO
         }
-
 
         public void Demo()
         {
@@ -67,7 +62,6 @@ namespace DXGI_DesktopDuplication
 
             Console.WriteLine("Exited");
         }
-
 
         public async Task InitNetworkManager()
         {
@@ -171,11 +165,10 @@ namespace DXGI_DesktopDuplication
 
         public void UpdateImage(Bitmap bitmap)
         {
-            IntPtr pointer = bitmap.GetHbitmap();
-
-            Image.Source = Imaging.CreateBitmapSourceFromHBitmap(pointer, IntPtr.Zero, Int32Rect.Empty,
-                BitmapSizeOptions.FromEmptyOptions());
-            DeleteObject(pointer);
+            //IntPtr pointer = bitmap.GetHbitmap();
+            //Image.Source = Imaging.CreateBitmapSourceFromHBitmap(pointer, IntPtr.Zero, Int32Rect.Empty,
+            //    BitmapSizeOptions.FromEmptyOptions());
+            //DeleteObject(pointer);
         }
 
 
@@ -241,23 +234,33 @@ namespace DXGI_DesktopDuplication
             using (var stream = new System.IO.MemoryStream(screenshot.Image))
             {
 
-                /*   Image image = Image.FromStream(stream);
-                   //Application.DoEvents();
-                   //this.BackgroundImage = image;
-                   if (ShowRegionOutlines)
-                   {
-                       var gfx = gdiScreen1.CreateGraphics();
-                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y));
-                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
-                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
-                       gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y));
-                       gfx.Dispose();
-                   }
-                   gdiScreen1.Draw(image, screenshot.Region);
+                   Image image = Image.FromStream(stream);
+                //Application.DoEvents();
+                var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                bitmap.BeginInit();
+                MemoryStream memoryStream = new MemoryStream();
+                // Save to a memory stream...
+                image.Save(memoryStream, ImageFormat.Bmp);
+                // Rewind the stream...
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                bitmap.StreamSource = memoryStream;
+                bitmap.EndInit();
+
+                this.BGImage.Source = bitmap;
+                   //if (ShowRegionOutlines)
+                   //{
+                   //    var gfx = gdiScreen1.CreateGraphics();
+                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y));
+                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
+                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
+                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y));
+                   //    gfx.Dispose();
+                   //}
+                   //gdiScreen1.Draw(image, screenshot.Region);
                }
 
-               LiveControlManager.RequestScreenshot();*/
+               //LiveControlManager.RequestScreenshot();
             }
         }
-    }
+    
 }
