@@ -24,7 +24,6 @@ namespace DXGI_DesktopDuplication
     /// </summary>
     public partial class MainWindow : Window
     {
-        //private DuplicationManager duplicationManager = null;
         public static UpdateUI RefreshUI;
         private Thread duplicateThread = null;
 
@@ -32,7 +31,7 @@ namespace DXGI_DesktopDuplication
         public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient;
 
         public NovaManager NovaManagerServer = null;
-        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer = null;
+        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer;
         public MainWindow()
         {
             InitializeComponent();
@@ -67,6 +66,7 @@ namespace DXGI_DesktopDuplication
         {
             NovaManagerClient=Managers.NovaClient.Instance.NovaManager;
             LiveControlManagerClient=  Managers.NovaClient.Instance.LiveControlManager;
+
             LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
 
             NovaManagerClient.OnIntroductionCompleted += new EventHandler<IntroducerIntroductionCompletedEventArgs>(ClientManager_OnIntroductionCompleted);
@@ -129,6 +129,8 @@ namespace DXGI_DesktopDuplication
         {
             // ButtonConnect.Set(() => ButtonConnect.Text, "Connecting to " + TextBox_Id.Text + " ...");
             remoteConnection.Content = "Connecting to machine..";
+            LiveControlManagerClient.RequestScreenshot();
+
         }
 
 
@@ -220,9 +222,8 @@ namespace DXGI_DesktopDuplication
 
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
-           await  InitNetworkManagerClient();
+            await  InitNetworkManagerClient();
             await NovaManagerClient.RequestIntroductionAsTask(RID.Text, PWD.Text);
-            LiveControlManagerClient.RequestScreenshot();
 
             //if (duplicateThread.ThreadState == System.Threading.ThreadState.Unstarted)
             //{
