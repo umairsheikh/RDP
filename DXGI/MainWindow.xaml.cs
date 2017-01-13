@@ -31,12 +31,10 @@ namespace DXGI_DesktopDuplication
         public Managers.Nova.Client.NovaManager NovaManagerClient = null;
         public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient;
 
-        public NovaManager NovaManagerServer = null;// { get { return Managers.NovaServer.Instance.NovaManager; } }
-        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer = null;// { get { return Managers.NovaServer.Instance.LiveControlManager; } }
-
+        public NovaManager NovaManagerServer = null;
+        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer = null;
         public MainWindow()
         {
-            LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
             InitializeComponent();
             RefreshUI = UpdateImage;
 
@@ -69,7 +67,6 @@ namespace DXGI_DesktopDuplication
         {
             NovaManagerClient=Managers.NovaClient.Instance.NovaManager;
             LiveControlManagerClient=  Managers.NovaClient.Instance.LiveControlManager;
-
             LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
 
             NovaManagerClient.OnIntroductionCompleted += new EventHandler<IntroducerIntroductionCompletedEventArgs>(ClientManager_OnIntroductionCompleted);
@@ -88,9 +85,9 @@ namespace DXGI_DesktopDuplication
             NovaManagerServer.Network.OnConnected += new EventHandler<Network.ConnectedEventArgs>(Network_OnConnected);
 
             PasswordGeneratedEventArgs passArgs = await NovaManagerServer.GeneratePassword();
-            LabelPassword.Content = passArgs.NewPassword;
+            //LabelPassword.Content = passArgs.NewPassword;
             IntroducerRegistrationResponsedEventArgs regArgs = await NovaManagerServer.RegisterWithIntroducerAsTask();
-            LabelNovaId.Content = regArgs.NovaId;
+            //LabelNovaId.Content = regArgs.NovaId;
             Status.Content = "Host is live";
 
             // LiveControlManagerServer.RunThreadToSendFrames(this.Dispatcher);
@@ -187,12 +184,11 @@ namespace DXGI_DesktopDuplication
 
 
 
-        //NOVA Network handshakes
+        //NOVA Network handshakes for HOST
         void Network_OnConnected(object sender, Network.ConnectedEventArgs e)
         {
             Status.Content = "Connected";
-            //LabelStatus.Set(() => LabelStatus.Text, "Connected");
-            //Timer_KeepAlive.Enabled = false;
+           
         }
 
         void ServerManager_OnNewPasswordGenerated(object sender, Providers.Nova.Modules.PasswordGeneratedEventArgs e)
