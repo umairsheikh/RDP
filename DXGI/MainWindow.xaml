@@ -13,10 +13,11 @@
         <Label x:Name="Status" Content="Status" HorizontalAlignment="Left" Margin="187,320,0,0" VerticalAlignment="Top"/>
         <Label x:Name="label" Content="RemoteID:" HorizontalAlignment="Left" Margin="286,320,0,0" VerticalAlignment="Top"/>
         <Label x:Name="label1" Content="Password" HorizontalAlignment="Left" Margin="286,348,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="RemoteID" HorizontalAlignment="Left" Height="23" Margin="356,352,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="textBox1" HorizontalAlignment="Left" Height="23" Margin="356,324,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="PWD" HorizontalAlignment="Left" Height="23" Margin="356,352,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="RID" HorizontalAlignment="Left" Height="23" Margin="356,324,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top" Width="120"/>
         <Button x:Name="ConnectRemote" IsEnabled="True" Content="Connect Remote" HorizontalAlignment="Left" Margin="489,326,0,0" VerticalAlignment="Top" Width="98" Click="ConnectRemote_Click"/>
         <Button x:Name="startCapture" Content="HOST" HorizontalAlignment="Left" Margin="187,352,0,0" VerticalAlignment="Top" Width="75" Click="startCapture_Click"/>
+        <Label x:Name="remoteConnection" Content="Remote connection status" HorizontalAlignment="Left" Margin="481,352,0,0" VerticalAlignment="Top"/>
 
 
 
