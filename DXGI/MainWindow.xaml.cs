@@ -28,11 +28,11 @@ namespace DXGI_DesktopDuplication
         public static UpdateUI RefreshUI;
         private Thread duplicateThread = null;
 
-        public Managers.Nova.Client.NovaManager NovaManagerClient { get { return Managers.NovaClient.Instance.NovaManager; } }
-        public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient { get { return Managers.NovaClient.Instance.LiveControlManager; } }
+        public Managers.Nova.Client.NovaManager NovaManagerClient = null;
+        public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient;
 
-        public NovaManager NovaManagerServer { get { return Managers.NovaServer.Instance.NovaManager; } }
-        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer { get { return Managers.NovaServer.Instance.LiveControlManager; } }
+        public NovaManager NovaManagerServer = null;// { get { return Managers.NovaServer.Instance.NovaManager; } }
+        public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer = null;// { get { return Managers.NovaServer.Instance.LiveControlManager; } }
 
         public MainWindow()
         {
@@ -64,14 +64,24 @@ namespace DXGI_DesktopDuplication
             Console.WriteLine("Exited");
         }
 
-        public async Task InitNetworkManager()
+
+        public async Task InitNetworkManagerClient()
         {
+            NovaManagerClient=Managers.NovaClient.Instance.NovaManager;
+            LiveControlManagerClient=  Managers.NovaClient.Instance.LiveControlManager;
+
+            LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
 
             NovaManagerClient.OnIntroductionCompleted += new EventHandler<IntroducerIntroductionCompletedEventArgs>(ClientManager_OnIntroductionCompleted);
             NovaManagerClient.OnNatTraversalSucceeded += new EventHandler<Network.NatTraversedEventArgs>(ClientManager_OnNatTraversalSucceeded);
             NovaManagerClient.OnConnected += new EventHandler<ConnectedEventArgs>(ClientManager_OnConnected);
+        }
 
+        public async Task InitNetworkManagerServer()
+        {
 
+             NovaManagerServer =  Managers.NovaServer.Instance.NovaManager; 
+             LiveControlManagerServer =  Managers.NovaServer.Instance.LiveControlManager;
 
             NovaManagerServer.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
             NovaManagerServer.OnNewPasswordGenerated += new EventHandler<PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
