@@ -117,12 +117,12 @@ namespace Providers.LiveControl.Server
         private void OnRequestScreenshotMessageReceived2(MessageEventArgs<RequestScreenshotMessage> e)
         {
 
-            duplicateThread = new Thread(Demo);
-
             mydispatchtoParse = Dispatcher.CurrentDispatcher;
             duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
             duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady;
-
+            //duplicateThread = new Thread(Demo);
+            Demo();
+            
              CaptureFrame();
             //Demo();
 

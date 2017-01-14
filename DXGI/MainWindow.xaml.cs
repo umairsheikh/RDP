@@ -208,10 +208,10 @@ namespace DXGI_DesktopDuplication
                 bitmap.StreamSource = memoryStream;
                 bitmap.EndInit();
 
-                //this.BGImage.Source = bitmap;
+                this.BGImage.Source = bitmap;
 
                 //if (dispatcher != null)
-                    Dispatcher.BeginInvoke(MainWindow.RefreshUI,bitmap);
+                 // Dispatcher.BeginInvoke(MainWindow.RefreshUI,bitmap);
                 //if (ShowRegionOutlines)
                 //{
                 //    var gfx = gdiScreen1.CreateGraphics();
