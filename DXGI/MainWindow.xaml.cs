@@ -224,7 +224,7 @@ namespace DXGI_DesktopDuplication
                 //gdiScreen1.Draw(image, screenshot.Region);
             }
 
-               //LiveControlManager.RequestScreenshot();
+              // LiveControlManager.RequestScreenshot();
             }
      }
     
