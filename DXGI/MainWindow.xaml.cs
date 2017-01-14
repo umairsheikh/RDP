@@ -27,11 +27,13 @@ namespace DXGI_DesktopDuplication
         public static UpdateUI RefreshUI;
         private Thread duplicateThread = null;
 
-        public Managers.Nova.Client.NovaManager NovaManagerClient = null;
+        public Managers.Nova.Client.NovaManager NovaManagerClient;
         public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient;
 
-        public NovaManager NovaManagerServer = null;
+        public NovaManager NovaManagerServer;
         public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer;
+
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -49,17 +51,7 @@ namespace DXGI_DesktopDuplication
             //TODO
         }
 
-        public void Demo()
-        {
-
-            while (Thread.CurrentThread.IsAlive)
-            {
-                CapturedChangedRects();
-                Console.WriteLine("Capture");
-            }
-          
-            Console.WriteLine("Exited");
-        }
+      
 
 
         public async Task InitNetworkManagerClient()
@@ -90,7 +82,6 @@ namespace DXGI_DesktopDuplication
             //LabelNovaId.Content = regArgs.NovaId;
             Status.Content = "Host is live";
 
-            // LiveControlManagerServer.RunThreadToSendFrames(this.Dispatcher);
 
         }
 
@@ -135,57 +126,19 @@ namespace DXGI_DesktopDuplication
         }
 
 
-        public async Task CaptureFrame()
+        public void UpdateImage(Bitmap bitmap)
         {
+            IntPtr pointer = bitmap.GetHbitmap();
 
-            //FrameData frameData;
-            //duplicationManager.GetFrame(out frameData);
-            //duplicationManager.GetChangedRects(ref frameData); //TODO pending
-
-
-
-
-        }
-
-
-        public void CapturedChangedRects()
-        {
-            //FrameData data = null;
-            //duplicationManager.GetChangedRects(ref data);
-        }
-
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
-        {
-            //TODO test code here
-
-            if (duplicateThread.ThreadState == System.Threading.ThreadState.Unstarted)
-            {
-                duplicateThread.Start();
-                Console.WriteLine("Start");
-            }
-
-
-            CapturedChangedRects();
-            Console.WriteLine("Click");
-            //CaptureFrame();//TODO 已知bug：只有写成CaptureFrame时不会抛异常
+            BGImage.Source = Imaging.CreateBitmapSourceFromHBitmap(pointer, IntPtr.Zero, Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+            DeleteObject(pointer);
         }
 
         [DllImport("gdi32")]
         private static extern int DeleteObject(IntPtr o);
 
-
-        public void UpdateImage(Bitmap bitmap)
-        {
-            //IntPtr pointer = bitmap.GetHbitmap();
-            //Image.Source = Imaging.CreateBitmapSourceFromHBitmap(pointer, IntPtr.Zero, Int32Rect.Empty,
-            //    BitmapSizeOptions.FromEmptyOptions());
-            //DeleteObject(pointer);
-        }
-
-
-        //Nova Sending Screenshots over network
-
-
+        
 
         //NOVA Network handshakes for HOST
         void Network_OnConnected(object sender, Network.ConnectedEventArgs e)
@@ -244,33 +197,35 @@ namespace DXGI_DesktopDuplication
             using (var stream = new System.IO.MemoryStream(screenshot.Image))
             {
 
-                   Image image = Image.FromStream(stream);
-                //Application.DoEvents();
+                Image image = Image.FromStream(stream);
                 var bitmap = new System.Windows.Media.Imaging.BitmapImage();
                 bitmap.BeginInit();
                 MemoryStream memoryStream = new MemoryStream();
                 // Save to a memory stream...
-                image.Save(memoryStream, ImageFormat.Bmp);
+                 image.Save(memoryStream, ImageFormat.Bmp);
                 // Rewind the stream...
                 memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
                 bitmap.StreamSource = memoryStream;
                 bitmap.EndInit();
 
-                this.BGImage.Source = bitmap;
-                   //if (ShowRegionOutlines)
-                   //{
-                   //    var gfx = gdiScreen1.CreateGraphics();
-                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y));
-                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
-                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
-                   //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y));
-                   //    gfx.Dispose();
-                   //}
-                   //gdiScreen1.Draw(image, screenshot.Region);
-               }
+                //this.BGImage.Source = bitmap;
+
+                //if (dispatcher != null)
+                    Dispatcher.BeginInvoke(MainWindow.RefreshUI,bitmap);
+                //if (ShowRegionOutlines)
+                //{
+                //    var gfx = gdiScreen1.CreateGraphics();
+                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y));
+                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
+                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
+                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y));
+                //    gfx.Dispose();
+                //}
+                //gdiScreen1.Draw(image, screenshot.Region);
+            }
 
                //LiveControlManager.RequestScreenshot();
             }
-        }
+     }
     
 }

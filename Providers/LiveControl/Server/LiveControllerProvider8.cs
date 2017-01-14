@@ -51,11 +51,8 @@ namespace Providers.LiveControl.Server
             : base(network)
         {
 
-
-           
-
-/*
-
+            
+            /*
             DesktopChanges = new List<Rectangle>();
             Timer = new Stopwatch();
            // MirrorDriver.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
@@ -120,11 +117,14 @@ namespace Providers.LiveControl.Server
         private void OnRequestScreenshotMessageReceived2(MessageEventArgs<RequestScreenshotMessage> e)
         {
 
+            duplicateThread = new Thread(Demo);
+
             mydispatchtoParse = Dispatcher.CurrentDispatcher;
             duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
             duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady;
-            //duplicateThread = new Thread(Demo);
-            Demo();
+
+             CaptureFrame();
+            //Demo();
 
         }
 
