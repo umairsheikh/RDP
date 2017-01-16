@@ -35,7 +35,10 @@ namespace DXGI_DesktopDuplication
         private Texture2D screenTexture;
         private Texture2DDescription textureDesc;
         private int width;
-        //private Texture2D acquiredDesktopImage = null;
+
+        private OutputDuplicateFrameInformation duplicateFrameInformation;
+        private int mWhichOutputDevice = -1;
+
 
         private DuplicationManager()
         {
@@ -88,7 +91,7 @@ namespace DXGI_DesktopDuplication
                 OptionFlags = ResourceOptionFlags.None,
                 MipLevels = 1,
                 ArraySize = 1,
-                SampleDescription = {Count = 1, Quality = 0},
+                SampleDescription = { Count = 1, Quality = 0 },
                 Usage = ResourceUsage.Staging
             };
 
@@ -121,13 +124,13 @@ namespace DXGI_DesktopDuplication
                 new OutputDuplicateMoveRectangle
                     [
                     (int)
-                        Math.Ceiling((double) bufSize/
-                                     Marshal.SizeOf(typeof (OutputDuplicateMoveRectangle)))
+                        Math.Ceiling((double)bufSize /
+                                     Marshal.SizeOf(typeof(OutputDuplicateMoveRectangle)))
                     ];
 
             Console.WriteLine("Move : {0}  {1}  {2}  {3}", moveRectangles.Length, bufSize,
-                Marshal.SizeOf(typeof (OutputDuplicateMoveRectangle)),
-                bufSize/Marshal.SizeOf(typeof (OutputDuplicateMoveRectangle)));
+                Marshal.SizeOf(typeof(OutputDuplicateMoveRectangle)),
+                bufSize / Marshal.SizeOf(typeof(OutputDuplicateMoveRectangle)));
 
             //get move rects
             if (moveRectangles.Length > 0)
@@ -137,9 +140,9 @@ namespace DXGI_DesktopDuplication
             data.MoveCount = bufSize;
 
             bufSize = duplicateFrameInformation.TotalMetadataBufferSize - bufSize;
-            var dirtyRectangles = new Rectangle[bufSize/Marshal.SizeOf(typeof (Rectangle))];
+            var dirtyRectangles = new Rectangle[bufSize / Marshal.SizeOf(typeof(Rectangle))];
             Console.WriteLine("Dirty : {0}  {1}  {2}  {3}", dirtyRectangles.Length, bufSize,
-                Marshal.SizeOf(typeof (Rectangle)), bufSize/Marshal.SizeOf(typeof (Rectangle)));
+                Marshal.SizeOf(typeof(Rectangle)), bufSize / Marshal.SizeOf(typeof(Rectangle)));
             //get dirty rects
             if (dirtyRectangles.Length > 0)
                 duplicatedOutput.GetFrameDirtyRects(bufSize, dirtyRectangles, out bufSize);
@@ -158,7 +161,7 @@ namespace DXGI_DesktopDuplication
         {
             try
             {
-                onNewFrameReady(newBitmap);   
+                onNewFrameReady(newBitmap);
             }
             catch { }
         }
@@ -184,10 +187,12 @@ namespace DXGI_DesktopDuplication
                     try
                     {
                         Resource screenResource;
-                        OutputDuplicateFrameInformation duplicateFrameInformation;
+                         duplicateFrameInformation = new OutputDuplicateFrameInformation();
 
                         //try to get duplicated frame within given time
                         duplicatedOutput.AcquireNextFrame(TIME_OUT, out duplicateFrameInformation, out screenResource);
+                        RetrieveCursorMetadata();
+
 
                         if (i > 0)
                         {
@@ -207,20 +212,20 @@ namespace DXGI_DesktopDuplication
                                 foreach (Rectangle dirtyRectangle in data.DirtyRectangles)
                                 {
                                     Console.WriteLine("DirtyRectangle : {0}    Size : {1}    {2}，{3}",
-                                        dirtyRectangle, dirtyRectangle.Size.Height*dirtyRectangle.Size.Width,
+                                        dirtyRectangle, dirtyRectangle.Size.Height * dirtyRectangle.Size.Width,
                                         counter, subCounter);
 
                                     var exactrectangle = ExtractRect(dirtyRectangle.X, dirtyRectangle.Y, dirtyRectangle.Width,
                                            dirtyRectangle.Height);
-                                        exactrectangle.Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
+                                    exactrectangle.Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
                                     //FireNewFrameEvent(exactrectangle);
 
                                 }
                             counter++;
 
                             //Update Dispatcher to send event to invoke UI update from here or send that packet 
-                           var bitmapTosend = Texture2DToBitmap();
-                          FireNewFrameEvent(bitmapTosend);
+                            var bitmapTosend = Texture2DToBitmap();
+                            FireNewFrameEvent(bitmapTosend);
 
                             //if (dispatcher != null)
                             //    dispatcher.BeginInvoke(MainWindow.RefreshUI,
@@ -237,6 +242,70 @@ namespace DXGI_DesktopDuplication
                             Console.WriteLine("GetChangedRects : {0}", e.Message);
                     }
                 }
+        }
+
+        private void RetrieveCursorMetadata()
+        {
+            var pointerInfo = new PointerInfo();
+
+            // A non-zero mouse update timestamp indicates that there is a mouse position update and optionally a shape change
+            if (duplicateFrameInformation.LastMouseUpdateTime == 0)
+                return;
+
+            bool updatePosition = true;
+
+            // Make sure we don't update pointer position wrongly
+            // If pointer is invisible, make sure we did not get an update from another output that the last time that said pointer
+            // was visible, if so, don't set it to invisible or update.
+
+            if (!duplicateFrameInformation.PointerPosition.Visible && (pointerInfo.WhoUpdatedPositionLast != this.mWhichOutputDevice))
+                updatePosition = false;
+
+            // If two outputs both say they have a visible, only update if new update has newer timestamp
+            if (duplicateFrameInformation.PointerPosition.Visible && pointerInfo.Visible && (pointerInfo.WhoUpdatedPositionLast != this.mWhichOutputDevice) && (pointerInfo.LastTimeStamp > duplicateFrameInformation.LastMouseUpdateTime))
+                updatePosition = false;
+
+            // Update position
+            if (updatePosition)
+            {
+                pointerInfo.Position = new SharpDX.Point(duplicateFrameInformation.PointerPosition.Position.X, duplicateFrameInformation.PointerPosition.Position.Y);
+                pointerInfo.WhoUpdatedPositionLast = mWhichOutputDevice;
+                pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
+                pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
+
+                Console.WriteLine("PosX=" + pointerInfo.Position.X.ToString() + " PosY=" + pointerInfo.Position.Y);
+            }
+
+            // No new shape
+            if (duplicateFrameInformation.PointerShapeBufferSize == 0)
+                return;
+
+            if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
+            {
+                pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
+                pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
+            }
+
+            try
+            {
+                unsafe
+                {
+                    fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                    {
+                        duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
+                    }
+                }
+            }
+            catch (SharpDXException ex)
+            {
+                if (ex.ResultCode.Failure)
+                {
+                    throw new Exception("Failed to get frame pointer shape.");
+                }
+            }
+
+            //frame.CursorVisible = pointerInfo.Visible;
+            //frame.CursorLocation = new System.Drawing.Point(pointerInfo.Position.X, pointerInfo.Position.Y);
         }
 
         public void GetFrame(out FrameData data)
@@ -342,12 +411,12 @@ namespace DXGI_DesktopDuplication
             for (int y = 0; y < height; y++)
             {
                 // Copy a single line 
-                
-                Utilities.CopyMemory(destPtr, sourcePtr, width*4);
+
+                Utilities.CopyMemory(destPtr, sourcePtr, width * 4);
 
                 // Advance pointers
-                if(y != height - 1)
-                sourcePtr = IntPtr.Add(sourcePtr, mapSource.RowPitch);
+                if (y != height - 1)
+                    sourcePtr = IntPtr.Add(sourcePtr, mapSource.RowPitch);
                 destPtr = IntPtr.Add(destPtr, mapDest.Stride);
             }
 
@@ -357,5 +426,7 @@ namespace DXGI_DesktopDuplication
 
             return bitmap;
         }
+
+    
     }
 }

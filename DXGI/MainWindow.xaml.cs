@@ -33,7 +33,11 @@ namespace DXGI_DesktopDuplication
         public NovaManager NovaManagerServer;
         public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer;
 
-        
+        public SharpDX.DirectInput.Mouse mouse;
+        public SharpDX.DirectInput.MouseState mouseState;
+        public SharpDX.DirectInput.Keyboard keyboard;
+        public SharpDX.DirectInput.KeyboardState keyboardState;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -174,6 +178,7 @@ namespace DXGI_DesktopDuplication
 
         }
 
+        //Client 
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
             await  InitNetworkManagerClient();
@@ -226,6 +231,44 @@ namespace DXGI_DesktopDuplication
 
               // LiveControlManager.RequestScreenshot();
             }
-     }
+
+        public void CreateDevice()
+        {
+            SharpDX.DirectInput.DirectInput dinput = new SharpDX.DirectInput.DirectInput();
+            SharpDX.DirectInput.CooperativeLevel cooperativeLevel;
+            cooperativeLevel = SharpDX.DirectInput.CooperativeLevel.NonExclusive;
+            cooperativeLevel |= SharpDX.DirectInput.CooperativeLevel.Background;
+            mouse = new SharpDX.DirectInput.Mouse(dinput);
+            //mouse.SetCooperativeLevel(Window, cooperativeLevel);
+            //mouse.SetCooperativeLevel(Window, cooperativeLevel);
+            mouse.Acquire();
+
+            keyboard = new SharpDX.DirectInput.Keyboard(dinput);
+            cooperativeLevel = SharpDX.DirectInput.CooperativeLevel.NonExclusive;
+            cooperativeLevel |= SharpDX.DirectInput.CooperativeLevel.Foreground;
+            
+            //keyboard.SetCooperativeLevel(Window, cooperativeLevel);
+            keyboard.Acquire();
+
+            //Point startPoint = System.Windows.Forms.Cursor.Position;
+            //mouseCoord.X = Window.PointToClient(startPoint).X;
+            //mouseCoord.Y = Window.PointToClient(startPoint).Y;
+            mouseState = new SharpDX.DirectInput.MouseState();
+            keyboardState = new SharpDX.DirectInput.KeyboardState();
+        }
+
+       
+
+        private void BGImage_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            System.Windows.Point P = e.GetPosition(null);
+            Console.WriteLine("X= " + P.X.ToString()+" Y= "+P.Y.ToString());
+        }
+
+        private void BGImage_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+
+        }
+    }
     
 }

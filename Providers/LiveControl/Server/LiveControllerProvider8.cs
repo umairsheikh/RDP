@@ -33,8 +33,6 @@ namespace Providers.LiveControl.Server
         private Thread duplicateThread = null;
 
         private DesktopDuplicator MirrorDriver;
-        public DesktopFrame frame = null;
-
         public Dispatcher mydispatchtoParse { get; set; }
         
 
