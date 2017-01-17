@@ -214,7 +214,7 @@ namespace DXGI_DesktopDuplication
                 bitmap.EndInit();
 
                 this.BGImage.Source = bitmap;
-
+                KeyboardMouseDeviceAquisition();
                 //if (dispatcher != null)
                  // Dispatcher.BeginInvoke(MainWindow.RefreshUI,bitmap);
                 //if (ShowRegionOutlines)
@@ -232,7 +232,7 @@ namespace DXGI_DesktopDuplication
               // LiveControlManager.RequestScreenshot();
             }
 
-        public void CreateDevice()
+        public async Task KeyboardMouseDeviceAquisition()
         {
             SharpDX.DirectInput.DirectInput dinput = new SharpDX.DirectInput.DirectInput();
             SharpDX.DirectInput.CooperativeLevel cooperativeLevel;
@@ -257,17 +257,29 @@ namespace DXGI_DesktopDuplication
             keyboardState = new SharpDX.DirectInput.KeyboardState();
         }
 
-       
+
+        private async Task ImageClicked()
+        { 
+                
+            
+        }
 
         private void BGImage_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            System.Windows.Point P = e.GetPosition(null);
+            System.Windows.Point P = e.GetPosition(BGImage);
             Console.WriteLine("X= " + P.X.ToString()+" Y= "+P.Y.ToString());
         }
 
         private void BGImage_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            System.Windows.Point P = e.GetPosition(BGImage);
+            Console.WriteLine("X= " + P.X.ToString() + " Y= " + P.Y.ToString());
+        }
 
+        private void BGImage_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            System.Windows.Point P = e.GetPosition(BGImage);
+            Console.WriteLine("X= " + P.X.ToString() + " Y= " + P.Y.ToString());
         }
     }
     
